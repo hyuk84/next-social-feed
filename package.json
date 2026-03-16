@@ -3,9 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
+    "dev": "pnpm dev:local",
+    "dev:local": "set -a; . ./.env.local; set +a; APP_ENV=local next dev",
+    "dev:dev": "set -a; . ./.env.dev; set +a; APP_ENV=dev next dev",
+    "build": "pnpm build:prod",
+    "build:prod": "if [ -f .env.prod ]; then set -a; . ./.env.prod; set +a; fi; APP_ENV=prod next build",
+    "start": "pnpm start:prod",
+    "start:prod": "if [ -f .env.prod ]; then set -a; . ./.env.prod; set +a; fi; APP_ENV=prod next start",
     "lint": "eslint"
   },
   "dependencies": {

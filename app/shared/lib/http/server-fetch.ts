@@ -1,4 +1,5 @@
 import { cookies } from 'next/headers';
+import { serverEnv } from '@/app/shared/lib/env/server-env';
 
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETED';
 
@@ -37,7 +38,7 @@ export async function serverFetch({
     }
   }
 
-  return fetch(`${process.env.BACKEND_BASE_URL}${path}`, {
+  return fetch(`${serverEnv.backendBaseUrl}${path}`, {
     method,
     headers: finalHeaders,
     body: hasBody ? JSON.stringify(body) : undefined,
