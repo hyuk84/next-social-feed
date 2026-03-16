@@ -12,7 +12,7 @@ import {
 import { zodResolver } from '@hookform/resolvers/zod';
 
 export function SignUpForm() {
-  const signupEmail = useSignupEmail();
+  const signupEmailMutation = useSignupEmail();
 
   const {
     register,
@@ -32,11 +32,16 @@ export function SignUpForm() {
   });
 
   const onSubmit = async (values: SignFormValues) => {
-    const { confirmPassword, terms, ...payload } = values;
-    await signupEmail.mutateAsync(payload);
+    const payload = {
+      email: values.email,
+      password: values.password,
+      userName: values.userName,
+      displayName: values.displayName,
+    };
+    await signupEmailMutation.mutateAsync(payload);
   };
 
-  const isLoading = isSubmitting || signupEmail.isPending;
+  const isLoading = isSubmitting || signupEmailMutation.isPending;
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
@@ -82,14 +87,14 @@ export function SignUpForm() {
       />
       <TermsAgreement error={errors.terms?.message} {...register('terms')} />
 
-      {signupEmail.isError ? (
+      {signupEmailMutation.isError ? (
         <p className="text-sm text-red-500">
-          {signupEmail.error.response?.data?.message ??
+          {signupEmailMutation.error.response?.data?.message ??
             'Something went wrong while creating your account'}
         </p>
       ) : null}
 
-      {signupEmail.isSuccess ? (
+      {signupEmailMutation.isSuccess ? (
         <p className="text-sm text-green-600">
           Your account has been created successfully.
         </p>
