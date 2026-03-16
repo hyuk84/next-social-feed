@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
 import { Plus_Jakarta_Sans } from 'next/font/google';
 import './globals.css';
-import Header from './components/Header';
+
 import { CustomIconDescriptorType } from '@/types/metadata';
+import Providers from './providers';
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ['latin'],
@@ -36,8 +37,7 @@ export default function RootLayout({
       <body
         className={`${plusJakartaSans.variable} bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen`}
       >
-        <Header />
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
