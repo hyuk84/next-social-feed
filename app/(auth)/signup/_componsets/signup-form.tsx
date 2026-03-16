@@ -38,7 +38,12 @@ export function SignUpForm() {
       userName: values.userName,
       displayName: values.displayName,
     };
-    await signupEmailMutation.mutateAsync(payload);
+
+    try {
+      await signupEmailMutation.mutateAsync(payload);
+    } catch {
+      return;
+    }
   };
 
   const isLoading = isSubmitting || signupEmailMutation.isPending;
