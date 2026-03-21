@@ -1,9 +1,9 @@
-import { AuthCard } from './_componsets/auth-card';
-import { AuthDivider } from './_componsets/auth-divider';
-import { SignUpFooter } from './_componsets/signup-footer';
-import { SignUpForm } from './_componsets/signup-form';
-import { SignUpHeader } from './_componsets/signup-header';
-import { SocialLoginButtons } from './_componsets/social-login-buttons';
+import { AuthCard } from './_components/auth-card';
+import { AuthDivider } from './_components/auth-divider';
+import { SignUpFooter } from './_components/signup-footer';
+import { SignUpForm } from './_components/signup-form';
+import { SignUpHeader } from './_components/signup-header';
+import { SocialLoginButtons } from '../_components/social-login-buttons';
 
 export default function SignUp() {
   return (

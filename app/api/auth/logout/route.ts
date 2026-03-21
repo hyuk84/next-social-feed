@@ -1,16 +1,13 @@
 import { NextResponse } from 'next/server';
 import { AUTH_API_PATHS } from '../auth-api-paths';
-import { serverFetch } from '@/app/shared/lib/http/server-fetch';
+import { authenticatedServerFetch } from '@/app/shared/lib/http/server-auth-fetch';
 import { createInternalServerErrorBody } from '@/app/shared/lib/http/http-error';
-
-const AUTH_REQUIRED = true;
 
 export async function POST() {
   try {
-    const response = await serverFetch({
+    const { response } = await authenticatedServerFetch({
       path: AUTH_API_PATHS.AUTH_LOGOUT,
       method: 'POST',
-      requireAuth: AUTH_REQUIRED,
     });
 
     const data = await response.json().catch(() => null);

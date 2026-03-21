@@ -4,7 +4,7 @@ import { getMe } from '../api/get-me';
 
 export function useMe() {
   return useQuery({
-    queryKey: queryKeys.auth.me,
+    queryKey: queryKeys.users.me,
     queryFn: getMe,
     retry: 0,
   });

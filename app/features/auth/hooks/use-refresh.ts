@@ -9,7 +9,7 @@ export function useRefresh() {
     mutationFn: refresh,
     onSuccess: (data) => {
       if (data.user) {
-        queryClient.setQueryData(queryKeys.auth.me, data.user);
+        queryClient.setQueryData(queryKeys.users.me, data.user);
       }
     },
   });

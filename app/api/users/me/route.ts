@@ -1,20 +1,17 @@
-import { serverFetch } from '@/app/shared/lib/http/server-fetch';
-import { toNextJsonResponse } from '@/app/shared/lib/http/to-next-json-response';
+import { authenticatedServerFetch } from '@/app/shared/lib/http/server-auth-fetch';
+import { toAuthenticatedNextJsonResponse } from '@/app/shared/lib/http/to-authenticated-next-json-response';
 import { NextResponse } from 'next/server';
 import { createInternalServerErrorBody } from '@/app/shared/lib/http/http-error';
 import { USERS_API_PATHS } from '../users-api-paths';
 
-const AUTH_REQUIRED = true;
-
 export async function GET() {
   try {
-    const response = await serverFetch({
+    const result = await authenticatedServerFetch({
       path: USERS_API_PATHS.USERS_ME,
       method: 'GET',
-      requireAuth: AUTH_REQUIRED,
     });
 
-    return toNextJsonResponse(response);
+    return toAuthenticatedNextJsonResponse(result);
   } catch {
     return NextResponse.json(
       createInternalServerErrorBody(

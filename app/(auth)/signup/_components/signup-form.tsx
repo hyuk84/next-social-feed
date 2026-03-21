@@ -2,8 +2,8 @@
 
 import { useForm } from 'react-hook-form';
 import { useSignupEmail } from '@/app/features/auth/hooks/use-signup-email';
-import { AuthInputField } from './auth-input-field';
-import { PasswordField } from './password-field';
+import { AuthInputField } from '../../_components/auth-input-field';
+import { PasswordField } from '../../_components/password-field';
 import { TermsAgreement } from './terms-agreement';
 import {
   SignFormValues,

@@ -7,8 +7,6 @@ import {
 } from '@/app/shared/lib/auth/cookie-options';
 import { createInternalServerErrorBody } from '@/app/shared/lib/http/http-error';
 
-const AUTH_REQUIRED = false;
-
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -17,7 +15,6 @@ export async function POST(request: NextRequest) {
       path: AUTH_API_PATHS.AUTH_LOGIN_EMAIL,
       method: 'POST',
       body,
-      requireAuth: AUTH_REQUIRED,
     });
 
     const data = await response.json().catch(() => null);

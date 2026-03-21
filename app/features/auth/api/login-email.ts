@@ -1,4 +1,5 @@
 import { clientApi } from '@/app/shared/lib/http/client-api';
+import { User } from '../../users/types/user.types';
 
 export type LoginEmailRequest = {
   email: string;
@@ -6,12 +7,7 @@ export type LoginEmailRequest = {
 };
 
 export type LoginEmailResponse = {
-  user: {
-    id: string;
-    email: string;
-    userName: string;
-    displayName: string;
-  } | null;
+  user: User | null;
 };
 
 export async function loginEmail(payload: LoginEmailRequest) {

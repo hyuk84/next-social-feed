@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import Header from './components/Header';
+import { Header } from '@/app/shared/ui/header';
 
 export default function Home() {
   return (

@@ -2,11 +2,11 @@ import { serverFetch } from '@/app/shared/lib/http/server-fetch';
 import { cookies } from 'next/headers';
 import { AUTH_API_PATHS } from '../auth-api-paths';
 import { NextResponse } from 'next/server';
-import {
-  accessTokenCookieOptions,
-  refreshTokenCookieOptions,
-} from '@/app/shared/lib/auth/cookie-options';
+import { applyAuthCookieMutation } from '@/app/shared/lib/auth/auth-cookie-mutation';
 import { createInternalServerErrorBody } from '@/app/shared/lib/http/http-error';
+
+const UNAUTHORIZED_STATUS = 401;
+const FORBIDDEN_STATUS = 403;
 
 export async function POST() {
   try {
@@ -16,14 +16,22 @@ export async function POST() {
     const response = await serverFetch({
       path: AUTH_API_PATHS.AUTH_REFRESH,
       method: 'POST',
-      requireAuth: false,
-      headers: refreshToken ? { Authorzation: `Bearer ${refreshToken}` } : {},
+      headers: refreshToken ? { Authorization: `Bearer ${refreshToken}` } : {},
     });
 
     const data = await response.json().catch(() => null);
 
     if (!response.ok) {
-      return NextResponse.json(data, { status: response.status });
+      const res = NextResponse.json(data, { status: response.status });
+
+      if (
+        response.status === UNAUTHORIZED_STATUS ||
+        response.status === FORBIDDEN_STATUS
+      ) {
+        applyAuthCookieMutation(res, { clear: true });
+      }
+
+      return res;
     }
 
     const newAccessToken = data?.accessToken as string | undefined;
@@ -36,17 +44,10 @@ export async function POST() {
       { status: 200 },
     );
 
-    if (newAccessToken) {
-      res.cookies.set('accessToken', newAccessToken, accessTokenCookieOptions);
-    }
-
-    if (newRefreshToken) {
-      res.cookies.set(
-        'refreshToken',
-        newRefreshToken,
-        refreshTokenCookieOptions,
-      );
-    }
+    applyAuthCookieMutation(res, {
+      accessToken: newAccessToken,
+      refreshToken: newRefreshToken,
+    });
 
     return res;
   } catch {

@@ -22,9 +22,9 @@ export const metadata: Metadata = {
   icons: {
     other: icon,
   },
-  title: 'SocialSphere',
+  title: 'SocialFeed',
   description:
-    'SocialSphere is a modern social media feed built with Next.js and Tailwind CSS.',
+    'SocialFeed is a modern social media feed built with Next.js and Tailwind CSS.',
 };
 
 export default function RootLayout({
