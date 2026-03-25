@@ -3,6 +3,7 @@ import { applyAuthCookieMutation } from '@/app/shared/lib/auth/auth-cookie-mutat
 import { requestTokenRefresh } from '@/app/shared/lib/auth/request-token-refresh';
 import { NextRequest, NextResponse } from 'next/server';
 
+const PUBLIC_AUTH_PATHS = new Set(['/login', '/signup']);
 const PROTECTED_PATHS = new Set(['/']);
 const ACCESS_TOKEN_REFRESH_BUFFER_MS = 30_000;
 const UNAUTHORIZED_STATUS = 401;
@@ -17,6 +18,11 @@ function getBackendBaseUrl() {
 
   return backendBaseUrl;
 }
+
+function isPublicAuthPath(pathname: string) {
+  return PUBLIC_AUTH_PATHS.has(pathname);
+}
+
 function isProtectedPath(pathname: string) {
   return PROTECTED_PATHS.has(pathname);
 }
@@ -27,6 +33,16 @@ function shouldClearAuthCookies(status?: number) {
 
 function createLoginRedirect(request: NextRequest, clear = false) {
   const response = NextResponse.redirect(new URL('/login', request.url));
+
+  if (clear) {
+    applyAuthCookieMutation(response, { clear: true });
+  }
+
+  return response;
+}
+
+function createAuthPageResponse(clear = false) {
+  const response = NextResponse.next();
 
   if (clear) {
     applyAuthCookieMutation(response, { clear: true });
@@ -85,8 +101,10 @@ function createAuthenticatedResponse(
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
+  const publicAuthPath = isPublicAuthPath(pathname);
+  const protectedPath = isProtectedPath(pathname);
 
-  if (!isProtectedPath(pathname)) {
+  if (!publicAuthPath && !protectedPath) {
     return NextResponse.next();
   }
 
@@ -94,7 +112,7 @@ export async function middleware(request: NextRequest) {
   const refreshToken = request.cookies.get('refreshToken')?.value;
 
   if (!accessToken && !refreshToken) {
-    return createLoginRedirect(request);
+    return protectedPath ? createLoginRedirect(request) : NextResponse.next();
   }
 
   const accessTokenExpired = isAccessTokenExpired(
@@ -104,7 +122,9 @@ export async function middleware(request: NextRequest) {
 
   if (!accessToken || accessTokenExpired) {
     if (!refreshToken) {
-      return createLoginRedirect(request, Boolean(accessToken));
+      return protectedPath
+        ? createLoginRedirect(request, Boolean(accessToken))
+        : createAuthPageResponse(Boolean(accessToken));
     }
 
     const refreshed = await requestTokenRefresh({
@@ -114,7 +134,9 @@ export async function middleware(request: NextRequest) {
     const clearCookies = shouldClearAuthCookies(refreshed?.response.status);
 
     if (!refreshed || !refreshed.response.ok || !refreshed.accessToken) {
-      return createLoginRedirect(request, clearCookies);
+      return protectedPath
+        ? createLoginRedirect(request, clearCookies)
+        : createAuthPageResponse(clearCookies);
     }
 
     return createAuthenticatedResponse(
@@ -128,5 +150,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/'],
+  matcher: ['/', '/login', '/signup'],
 };
