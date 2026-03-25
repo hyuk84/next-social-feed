@@ -1,27 +1,19 @@
-import { USERS_API_PATHS } from '@/app/api/users/users-api-paths';
-import { authenticatedServerFetch } from '@/app/shared/lib/http/server-auth-fetch';
+import { isAccessTokenExpired } from '@/app/shared/lib/auth/access-token';
+import { getCurrentUser } from '@/app/shared/lib/auth/get-current-user';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
 export async function redirectIfAuthenticated() {
   const cookieStore = await cookies();
   const accessToken = cookieStore.get('accessToken')?.value;
-  const refreshToken = cookieStore.get('refreshToken')?.value;
 
-  if (!accessToken && !refreshToken) {
+  if (!accessToken || isAccessTokenExpired(accessToken)) {
     return;
   }
 
-  const result = await authenticatedServerFetch({
-    path: USERS_API_PATHS.USERS_ME,
-    method: 'GET',
-  }).catch(() => null);
+  const user = await getCurrentUser();
 
-  if (!result) {
-    return;
-  }
-
-  if (result.response.ok) {
+  if (user) {
     redirect('/');
   }
 }

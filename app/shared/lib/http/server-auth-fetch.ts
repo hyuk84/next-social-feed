@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers';
-import { AUTH_API_PATHS } from '@/app/api/auth/auth-api-paths';
 import { AuthCookieMutation } from '@/app/shared/lib/auth/auth-cookie-mutation';
+import { requestTokenRefresh } from '@/app/shared/lib/auth/request-token-refresh';
+import { serverEnv } from '@/app/shared/lib/env/server-env';
 import { createInternalServerErrorBody } from './http-error';
 import { serverFetch, type ServerFetchOptions } from './server-fetch';
 
@@ -13,15 +14,6 @@ export type AuthenticatedServerFetchResult = {
   response: Response;
   authCookies?: AuthCookieMutation;
 };
-
-type RefreshResponseBody = {
-  accessToken?: unknown;
-  refreshToken?: unknown;
-};
-
-function isObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null;
-}
 
 function createAuthHeaders(
   headers: Record<string, string> = {},
@@ -52,28 +44,6 @@ function shouldClearCookies(status: number) {
   return status === UNAUTHORIZED_STATUS || status === FORBIDDEN_STATUS;
 }
 
-function getRefreshedTokens(data: unknown) {
-  if (!isObject(data)) {
-    return {
-      accessToken: undefined,
-      refreshToken: undefined,
-    };
-  }
-
-  const refreshData = data as RefreshResponseBody;
-
-  return {
-    accessToken:
-      typeof refreshData.accessToken === 'string'
-        ? refreshData.accessToken
-        : undefined,
-    refreshToken:
-      typeof refreshData.refreshToken === 'string'
-        ? refreshData.refreshToken
-        : undefined,
-  };
-}
-
 export async function authenticatedServerFetch(
   options: AuthenticatedServerFetchOptions,
 ): Promise<AuthenticatedServerFetchResult> {
@@ -94,14 +64,18 @@ export async function authenticatedServerFetch(
     };
   }
 
-  const refreshResponse = await serverFetch({
-    path: AUTH_API_PATHS.AUTH_REFRESH,
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${refreshToken}`,
-    },
+  const refreshed = await requestTokenRefresh({
+    backendBaseUrl: serverEnv.backendBaseUrl,
+    refreshToken,
   });
-  const refreshData = await refreshResponse.clone().json().catch(() => null);
+
+  if (!refreshed) {
+    return {
+      response,
+    };
+  }
+
+  const { response: refreshResponse } = refreshed;
 
   if (!refreshResponse.ok) {
     return {
@@ -115,7 +89,7 @@ export async function authenticatedServerFetch(
   const {
     accessToken: nextAccessToken,
     refreshToken: nextRefreshToken,
-  } = getRefreshedTokens(refreshData);
+  } = refreshed;
 
   if (!nextAccessToken) {
     return {
