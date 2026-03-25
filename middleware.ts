@@ -1,10 +1,12 @@
 import { isAccessTokenExpired } from '@/app/shared/lib/auth/access-token';
+import {
+  isProtectedPath,
+  isPublicAuthPath,
+} from '@/app/shared/lib/auth/auth-routes';
 import { applyAuthCookieMutation } from '@/app/shared/lib/auth/auth-cookie-mutation';
 import { requestTokenRefresh } from '@/app/shared/lib/auth/request-token-refresh';
 import { NextRequest, NextResponse } from 'next/server';
 
-const PUBLIC_AUTH_PATHS = new Set(['/login', '/signup']);
-const PROTECTED_PATHS = new Set(['/']);
 const ACCESS_TOKEN_REFRESH_BUFFER_MS = 30_000;
 const UNAUTHORIZED_STATUS = 401;
 const FORBIDDEN_STATUS = 403;
@@ -18,15 +20,6 @@ function getBackendBaseUrl() {
 
   return backendBaseUrl;
 }
-
-function isPublicAuthPath(pathname: string) {
-  return PUBLIC_AUTH_PATHS.has(pathname);
-}
-
-function isProtectedPath(pathname: string) {
-  return PROTECTED_PATHS.has(pathname);
-}
-
 function shouldClearAuthCookies(status?: number) {
   return status === UNAUTHORIZED_STATUS || status === FORBIDDEN_STATUS;
 }
@@ -150,5 +143,7 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
+  // Next.js requires this to stay as a static literal in middleware.ts.
+  // Wildcard patterns are also allowed here, for example '/account/:path*'.
   matcher: ['/', '/login', '/signup'],
 };
