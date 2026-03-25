@@ -9,9 +9,11 @@ import {
 } from '@/app/features/auth/schemas/login.schema';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useRouter } from 'next/navigation';
 
 export function LoginForm() {
   const loginEmailMutation = useLoginEmail();
+  const router = useRouter();
 
   const {
     register,
@@ -34,6 +36,7 @@ export function LoginForm() {
 
     try {
       await loginEmailMutation.mutateAsync(payload);
+      router.replace('/');
     } catch {
       return;
     }

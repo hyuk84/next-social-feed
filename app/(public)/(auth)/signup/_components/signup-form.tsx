@@ -10,9 +10,11 @@ import {
   signupSchema,
 } from '@/app/features/auth/schemas/signup.schema';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useRouter } from 'next/navigation';
 
 export function SignUpForm() {
   const signupEmailMutation = useSignupEmail();
+  const router = useRouter();
 
   const {
     register,
@@ -41,6 +43,7 @@ export function SignUpForm() {
 
     try {
       await signupEmailMutation.mutateAsync(payload);
+      router.replace('/');
     } catch {
       return;
     }
